@@ -1,0 +1,11 @@
+services:
+  spark:
+    container_name: slytico_spark_container
+    build: .
+    environment:
+      - SPARK_LOCAL_DIRS=/tmp
+    volumes:
+      - ./data:/data
+      - ./logs:/app/logs
+    stdin_open: true
+    tty: true
