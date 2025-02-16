@@ -4,11 +4,14 @@ USER root
 
 RUN apt-get update && apt-get install -y curl
 
-RUN pip install delta-spark==3.3.0 pandas
+#RUN pip install delta-spark==3.3.0 pandas
+COPY requirements.txt .
+RUN pip install -r requirements.txt
 
 COPY jobs/. /app/jobs/.
 COPY scripts/. /app/scripts/.
 COPY utils/. /app/utils/.
+COPY config/. /app/config/.
 
 WORKDIR /app
 

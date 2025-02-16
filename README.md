@@ -1,0 +1,1 @@
+A simple Spark application with Delta Lake on top of it. It reads a few CSV files from a public Github repo, then does some basic transformations and calculations. Everything runs inside Docker containers.

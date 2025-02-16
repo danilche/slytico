@@ -1,29 +1,31 @@
 from pyspark.sql import SparkSession
 import pyspark.sql.functions as F
 from delta import configure_spark_with_delta_pip
-import pandas as pd
+#import pandas as pd
 from utils.logger import get_logger
+from utils.utilities import *
+import yaml
 
-logger = get_logger("Ingestion job")
+with open("/app/config/config.yaml", "r") as file:
+    _config = yaml.safe_load(file)
 
-def load_files_into_df(file_list):
-    pd_dataframes = []
-    for file in file_list:
-        pd_dataframe = pd.read_csv(file)
-        logger.info(f"Successfully read file {file}")
-        logger.info(f"Dataframe count: {len(pd_dataframe)}")
-        pd_dataframes.append(pd_dataframe)
+job_name = "Ingestion job"
+logger = get_logger(job_name)
 
-    pd_final = pd.concat(pd_dataframes)
-    logger.info(f"Final dataframe count: {len(pd_final)}")
-    return pd_final
+# def load_file_into_pandas_df(file):
+#     try:
+#         pd_df = pd.read_csv(file)
+#         logger.info(f"Successfully read file {file}")
+#         logger.info(f"Dataframe count: {len(pd_df)}")
+#         return pd_df
+#     except Exception as e:
+#         logger.error(e)
 
-def df_as_string(df, n=20, truncate=True, vertical=False):
-    """Example wrapper function for interacting with self._jdf.showString"""
-    if isinstance(truncate, bool) and truncate:
-        return df._jdf.showString(n, 20, vertical)
-    else:
-        return df._jdf.showString(n, int(truncate), vertical)
+# def df_as_string(df, n=20, truncate=True, vertical=False):
+#     if isinstance(truncate, bool) and truncate:
+#         return df._jdf.showString(n, 20, vertical)
+#     else:
+#         return df._jdf.showString(n, int(truncate), vertical)
 
 
 
@@ -33,33 +35,19 @@ builder = (SparkSession.builder.appName("RawIngestion")
 
 spark = configure_spark_with_delta_pip(builder).getOrCreate()
 
-base_url = "https://raw.githubusercontent.com/solytic/opendata/refs/heads/master/bronze/demo/Date%3D2021-11-0"
-
-suffixes = ['1/part-00000.csv',
-            '2/part-00000.csv',
-            '2/part-00001.csv',
-            '3/part-00001.csv',
-            '3/part-00002.csv',
-            '4/part-00002.csv',
-            '4/part-00003.csv',
-            '4/part-00004.csv',
-            '5/part-00004.csv',
-            '5/part-00005.csv',
-            '5/part-00006.csv',
-            '6/part-00006.csv',
-            '6/part-00007.csv',
-            '6/part-00008.csv',
-            '7/part-00008.csv',
-            '7/part-00009.csv']
-    
+base_url = _config["url"]["csv_files"]
+suffixes = _config["csv"]["suffixes"]  
 files = [f"{base_url}{suffix}" for suffix in suffixes]
 
-raw_delta_path = "spark-warehouse/raw_data"
-silver_delta_path = "spark-warehouse/silver_data"
-gold_delta_path = "spark-warehouse/gold_data"
-results_path = "results/result.txt"
+raw_delta_path = _config["layer"]["raw"]
+silver_delta_path = _config["layer"]["silver"]
+gold_delta_path = _config["layer"]["gold"]
+results_path = _config["file"]["result"]
 
-spark_df_raw = spark.createDataFrame(load_files_into_df(files))
+all_files_df = pd.concat([load_file_into_pandas_df(file, job_name) for file in files])
+logger.info(f"Final dataframe count: {len(all_files_df)}")
+
+spark_df_raw = spark.createDataFrame(all_files_df)
 logger.info(f"Spark dataframe - raw data - count: {spark_df_raw.count()}")
 
 
