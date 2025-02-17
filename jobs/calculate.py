@@ -83,6 +83,11 @@ with open(results_path, 'a') as outfile:
     logger.info(f"Print result for Irradiance.")
 
 
+# Add flag to each dataset
+
+ap_agg_df = ap_agg_df.withColumn("flag", F.lit("ac_active_power"))
+irr_agg_df = irr_agg_df.withColumn("flag", F.lit("irradiance"))
+
 # union datasets and write to Gold layer
 
 agg_union_df = ap_agg_df.union(irr_agg_df)
