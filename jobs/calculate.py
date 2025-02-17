@@ -99,6 +99,10 @@ if agg_union_count == irr_agg_count + ap_agg_count:
 else:
     logger.warning("Union dataset count does not match with the sum of Active Power and Irradiance dataset counts.")
 
+ap_agg_df.show()
+irr_agg_df.show()
+agg_union_df.show()
+
 agg_union_df.write.format("delta").partitionBy(part_col_gold).mode("overwrite").save(gold_delta_path)
 logger.info("Successfully wrote union data to the Gold table.")
 

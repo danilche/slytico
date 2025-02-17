@@ -45,4 +45,6 @@ logger.info(f"Spark dataframe - raw data - count: {spark_df_raw.count()}")
 spark_df_raw.write.format("delta").mode("overwrite").save(raw_delta_path)
 logger.info("Raw ingestion complete.")
 
+spark_df_raw.show()
+
 spark.stop()

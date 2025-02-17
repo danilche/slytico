@@ -38,4 +38,6 @@ logger.info("Successfully transformed and cleansed data.")
 spark_df_cleaned.write.format("delta").partitionBy(part_col_silver).mode("overwrite").save(silver_delta_path)
 logger.info("Transformed data ingested into the Silver table.")
 
+spark_df_cleaned.show()
+
 spark.stop()
