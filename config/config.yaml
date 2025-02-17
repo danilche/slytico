@@ -28,3 +28,78 @@ csv:
               7/part-00008.csv,
               7/part-00009.csv
             ]
+
+partition_column:
+  silver: Date
+  gold: DeviceID
+
+
+columns:
+  transformed:
+    - name: Timestamp
+      expression: cast(Timestamp AS timestamp)
+    - name: Hour_Timestamp
+      expression: date_trunc('hour', Timestamp)
+    - name: Date
+      expression: to_date(Timestamp)
+  unchanged: [DeviceID, DeviceType, Value, Metric]
+
+
+irradiance:
+  filters:
+    - column: DeviceType
+      condition: IN
+      value: [Sensor, Satellite]
+    - column: Metric
+      condition: ==
+      value: irradiance
+
+  aggregation:
+    group_by:
+      - DeviceID
+      - Hour_Timestamp
+    metrics:
+      - name: HourlyMean
+        function: avg
+        column: Value
+      - name: DataPointCount
+        function: count
+        column: "*"
+  
+  result_filters:
+  - column: DeviceID
+    condition: "=="
+    value: 3258837907
+  - column: Hour_Timestamp
+    condition: ==
+    value: 2021-11-04 11:00:00
+
+
+active_power:
+  filters:
+    - column: DeviceType
+      condition: ==
+      value: Inverter
+    - column: Metric
+      condition: ==
+      value: ac_active_power
+
+  aggregation:
+    group_by:
+      - DeviceID
+      - Hour_Timestamp
+    metrics:
+      - name: HourlyMean
+        function: avg
+        column: Value
+      - name: DataPointCount
+        function: count
+        column: "*"
+
+  result_filters:
+  - column: DeviceID
+    condition: "=="
+    value: 1054530426
+  - column: Hour_Timestamp
+    condition: ==
+    value: 2021-11-04 11:00:00

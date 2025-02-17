@@ -1,3 +1,4 @@
 delta-spark==3.3.0 
 pandas
 pyyaml
+pytest
